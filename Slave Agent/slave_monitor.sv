@@ -86,11 +86,12 @@ endclass
 				collect_rc(q4.pop_front());
 				rc.put(1);
 			end
-		join	
+		join_any	
 	endtask
 
 	task slave_monitor::collect_awc();	
 		wtx = txn::type_id::create("wtx");
+		@(sif.s_mon);
 		wait(sif.s_mon.AWVALID && sif.s_mon.AWREADY);
 		wtx.awid = sif.s_mon.AWID;
 		wtx.awaddr = sif.s_mon.AWADDR;
@@ -143,6 +144,7 @@ endclass
 
 	task slave_monitor::collect_arc();
 		rtx = txn::type_id::create("rtx");
+		@(sif.s_mon);		
 		wait(sif.s_mon.ARVALID && sif.s_mon.ARREADY);
 		rtx.arid = sif.s_mon.ARID;
 		rtx.araddr = sif.s_mon.ARADDR;
@@ -171,4 +173,3 @@ endclass
 		s_ap.write(q5.pop_front());
 		@(sif.s_mon);
 	endtask
-
