@@ -5,6 +5,7 @@ class master_driver extends uvm_driver #(txn);
 		super.new(name,parent);
 	endfunction
 	
+	int bcount, rcount; 
 	
 	virtual AXI intrf;
 	virtual AXI.m_drv_mp mif;
@@ -76,6 +77,8 @@ endclass
 				bc.get(1);
 				wc_to_bc.get(1);
 				bc_drive(q3.pop_front());		//write response channel
+				bcount++;
+				`uvm_info(get_type_name(),$sformatf("bcount : %0d",bcount),UVM_MEDIUM)
 				bc.put(1);
 			end
 
@@ -90,9 +93,11 @@ endclass
 				rc.get(1);
 				arc_to_rc.get(1);
 				rc_drive(q5.pop_front());		//read data channel
+				rcount++;
+				`uvm_info(get_type_name(),$sformatf("rcount : %0d",rcount),UVM_MEDIUM)
 				rc.put(1);
 			end
-		join
+		join_any
 	endtask
 
 	task master_driver::awc_drive(txn req);
@@ -111,7 +116,7 @@ endclass
 		wait(mif.m_drv.AWREADY);
 		mif.m_drv.AWVALID <= 1'b0;
 		`uvm_info(get_type_name(),"Got AWREADY signal",UVM_MEDIUM)
-		repeat($urandom_range(1,5))
+		repeat($urandom_range(2,5))
 		@(mif.m_drv);
 	endtask
 
@@ -141,7 +146,7 @@ endclass
 			mif.m_drv.WID <= 4'd0;
 			mif.m_drv.WVALID <= 1'b0;
 			mif.m_drv.WSTRB <= 4'd0;
-			repeat($urandom_range(1,5))
+			repeat($urandom_range(2,5))
 			@(mif.m_drv);
 	endtask
 
@@ -179,7 +184,7 @@ endclass
 		
 		mif.m_drv.ARVALID <= 1'b0;
 		`uvm_info(get_type_name(),"Got ARREADY signal",UVM_MEDIUM)
-		repeat($urandom_range(1,5))
+		repeat($urandom_range(2,5))
 		@(mif.m_drv);
 	endtask
 	
@@ -190,7 +195,9 @@ endclass
 		wait(mif.m_drv.RVALID);
 		mif.m_drv.RREADY <= 1'b0;
 		
-		repeat($urandom_range(1,5))
+		repeat($urandom_range(2,5))
 		@(mif.m_drv);
 		end
 	endtask
+
+
