@@ -86,11 +86,12 @@ endclass
 				collect_rc(q4.pop_front());
 				rc.put(1);
 			end
-		join	
+		join_any	
 	endtask
 
 	task master_monitor::collect_awc();		
 		wtx = txn::type_id::create("wtx");
+		@(mif.m_mon);
 		wait(mif.m_mon.AWVALID && mif.m_mon.AWREADY);
 		wtx.awid = mif.m_mon.AWID;
 		wtx.awaddr = mif.m_mon.AWADDR;
@@ -145,6 +146,7 @@ endclass
 
 	task master_monitor::collect_arc();	
 		rtx = txn::type_id::create("rtx");
+		@(mif.m_mon);
 		wait(mif.m_mon.ARVALID && mif.m_mon.ARREADY);
 		rtx.arid = mif.m_mon.ARID;
 		rtx.araddr = mif.m_mon.ARADDR;
@@ -153,7 +155,6 @@ endclass
 		rtx.arburst = mif.m_mon.ARBURST;
 				
 		`uvm_info(get_type_name(),"\n\nMaster Read Address Channel",UVM_MEDIUM)
-
 		q4.push_back(rtx);	
 		m_ap.write(rtx);
 		@(mif.m_mon);
