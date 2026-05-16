@@ -44,9 +44,7 @@ endclass
 			req = txn::type_id::create("req");
 		forever begin
 			`uvm_info(get_type_name(),"Blocking method get_next_item",UVM_MEDIUM)
-			//seq_item_port.get_next_item(req);
 			send_to_master();
-			//seq_item_port.item_done();
 		end
 	endtask
 
@@ -54,7 +52,7 @@ endclass
 		fork
 			begin
 				awc.get(1);
-				awc_drive();	//write address channel		
+				awc_drive();	//write address channel					
 				awc.put(1);
 				awc_to_wc.put(1);
 			end
@@ -77,18 +75,16 @@ endclass
 				arc.get(1);
 				arc_drive();		//read address channel
 				arc.put(1);
-				req.randomize() with {arid == req2.arid; araddr == req2.araddr; arlen == req2.arlen;  arsize == req2.arsize; arburst == req2.arburst; };
-				q5.push_back(req);
 				arc_to_rc.put(1);
 			end
 		
 			begin
 				rc.get(1);
 				arc_to_rc.get(1);
-				rc_drive(q5.pop_front());		//read data channel
+				rc_drive(q3.pop_front());	
 				rc.put(1);
 			end
-		join
+		join_any
 	endtask
 
 
@@ -101,11 +97,12 @@ endclass
 		req1.awid = sif.s_drv.AWID;
 		req1.awlen = sif.s_drv.AWLEN;
 		q1.push_back(req1);	
-		repeat($urandom_range(1,5))
+		repeat($urandom_range(2,5))
 		@(sif.s_drv);
 	endtask
 
 	task slave_driver::wc_drive(txn tx);
+		`uvm_info(get_type_name(),$sformatf("write data channel tx is :\n%s",tx.sprint()),UVM_MEDIUM)
 		for(int i=0;i<=tx.awlen;i++) begin
 		sif.s_drv.WREADY <= 1'b1;
 		@(sif.s_drv);
@@ -115,12 +112,12 @@ endclass
 		@(sif.s_drv);
 		end
 		q2.push_back(tx);
-		//repeat($urandom_range(1,5))
-		//@(sif.s_drv);
 	endtask
 
 
 	task slave_driver::bc_drive(txn tx);
+		`uvm_info(get_type_name(),$sformatf("write response channel tx is :\n%s",tx.sprint()),UVM_MEDIUM)
+
 		tx.bid = tx.awid;
 		sif.s_drv.BID <= tx.bid;
 		sif.s_drv.BRESP <= 2'd0;
@@ -131,6 +128,7 @@ endclass
 		sif.s_drv.BRESP <= 2'dz;
 		sif.s_drv.BVALID <= 1'b0;
 		sif.s_drv.BID <= 2'd0;
+		repeat($urandom_range(2,5))
 		@(sif.s_drv);
 	endtask
 
@@ -147,21 +145,21 @@ endclass
 		req2.arburst = sif.s_drv.ARBURST;
 
 		q3.push_back(req2);
-		repeat($urandom_range(1,5))
+		repeat($urandom_range(2,5))
 		@(sif.s_drv);
 	
 	endtask
 
 	task slave_driver::rc_drive(txn req);
-		sif.s_drv.RID <= req.rid;	
+		`uvm_info(get_type_name(),$sformatf("read data :\n%s",req.sprint()),UVM_MEDIUM)
+		sif.s_drv.RID <= req.arid;	
 		for(int i=0;i<=(req.arlen);i++) begin
 			repeat($urandom_range(1,2))
 			@(sif.s_drv);
-			sif.s_drv.RDATA <=  req.rdata[i];
+			sif.s_drv.RDATA <=  $urandom();
 			sif.s_drv.RVALID <= 1'b1;
 			sif.s_drv.RRESP <= 2'd0;;
-			`uvm_info(get_type_name(),$sformatf("\nRDATA[%0d] : %0h | RRESP[%0d] : 0",i,req.rdata[i],i),UVM_LOW)
-			//$display("RDATA[%0d] : ",i,req.rdata[i],"\nRRESP[%0d] : ",i,req.rresp[i]);
+			`uvm_info(get_type_name(),$sformatf("\nRDATA[%0d] : %0h | RRESP[%0d] : 0",i,req.rdata[i],i),UVM_MEDIUM)
 			if(i == (req.arlen)) begin
 				sif.s_drv.RLAST <= 1'b1;
 				`uvm_info(get_type_name(),"\n\nAsserting RLAST",UVM_LOW)
@@ -172,12 +170,13 @@ endclass
 			wait(sif.s_drv.RREADY);
 				sif.s_drv.RVALID <= 1'b0;
 				`uvm_info(get_type_name(),"\n\Got RREADY",UVM_LOW)
+			@(sif.s_drv);
 		end
 			sif.s_drv.RLAST <= 1'b0;	
 			sif.s_drv.RID <= 4'd0;
 			sif.s_drv.RVALID <= 1'b0;
 			sif.s_drv.RRESP <= 2'dz;	
-			repeat($urandom_range(1,5))
+			repeat($urandom_range(2,5))
 			@(sif.s_drv);
 
 	endtask
