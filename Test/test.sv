@@ -44,8 +44,9 @@ class fixed_test extends base_test;
 	task run_phase(uvm_phase phase);
 		super.run_phase(phase);
 		phase.raise_objection(this);
-				f_seqh1 = fixed_seq::type_id::create("f_seqh1");
+				f_seqh1 = fixed_seq::type_id::create("f_seqh1");				
 				f_seqh1.start(envh.m_agt_top.m_agt[0].m_seqrh);
+		wait(envh.m_agt_top.m_agt[0].m_drvh.bcount == 10 && envh.m_agt_top.m_agt[0].m_drvh.rcount == 10);
 		phase.drop_objection(this);
 	endtask
 
@@ -70,8 +71,9 @@ class incr_test extends base_test;
 	task run_phase(uvm_phase phase);
 		super.run_phase(phase);
 		phase.raise_objection(this);
-				f_seqh1 = incr_seq::type_id::create("f_seqh1");
+				f_seqh1 = incr_seq::type_id::create("f_seqh1");				
 				f_seqh1.start(envh.m_agt_top.m_agt[0].m_seqrh);
+			wait(envh.m_agt_top.m_agt[0].m_drvh.bcount == 10 && envh.m_agt_top.m_agt[0].m_drvh.rcount == 10);
 		phase.drop_objection(this);
 	endtask
 	
@@ -96,8 +98,9 @@ class wrap_test extends base_test;
 	task run_phase(uvm_phase phase);
 		super.run_phase(phase);
 		phase.raise_objection(this);
-				f_seqh1 = wrap_seq::type_id::create("f_seqh1");
+				f_seqh1 = wrap_seq::type_id::create("f_seqh1");				
 				f_seqh1.start(envh.m_agt_top.m_agt[0].m_seqrh);
+			wait(envh.m_agt_top.m_agt[0].m_drvh.bcount == 10 && envh.m_agt_top.m_agt[0].m_drvh.rcount == 10);
 		phase.drop_objection(this);
 	endtask
 		
